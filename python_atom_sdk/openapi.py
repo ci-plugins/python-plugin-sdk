@@ -3,6 +3,7 @@ import os
 import traceback
 import requests
 import requests_toolbelt as rt
+from sys import version_info
 import json
 
 from . import setting
@@ -40,8 +41,8 @@ class OpenApi():
             self._log.error("[openapi]init error: sdk json do not exist")
             exit(-1)
 
-        with open(sdk_path, 'r') as f:
-            content = f.read()
+        with open(sdk_path, 'r') as f_sdk:
+            content = f_sdk.read()
         if not content:
             self._log.error("[openapi]init error: sdk json is null")
             exit(-1)
@@ -55,9 +56,9 @@ class OpenApi():
                 exit(-1)
 
             return sdk_json
-        except:
-            traceback.print_exc()
-            self._log.error("[openapi]parse sdk json error")
+        except Exception as _e: # pylint: disable=broad-except
+            self._log.error("[openapi]parse sdk json error, sdk.json is {}" .format(content))
+            print(traceback.format_exc())
             exit(-1)
 
     def check_sdk_json(self, src_json):
@@ -79,59 +80,43 @@ class OpenApi():
         else:
             return "http://{}/{}".format(self.gateway, path.lstrip("/"))
 
-    def do_get(self, url, params=None, timeout=60):
-        if params:
-            r = self.session.get(url, headers=self.header_auth, params=params, timeout=timeout)
-        else:
-            r = self.session.get(url, headers=self.header_auth, timeout=timeout)
-
+    def process_response(self, res):
         try:
-            content = r.text.encode("utf-8")
-        except:
-            content = r.text
-
-        if r.status_code == 200:
-            try:
-                ret = r.json()
+            if res.status_code == 200:
+                ret = res.json()
                 if ret["status"] != 0:
-                    self._log.error("unexpected status: {}".format(content))
+                    self._log.error("unexpected status: {}, content is {}".format(ret["status"], ret))
                     return False, {}
 
                 return True, ret["data"]
-            except:
-                self._log.error("abnormal: {}".format(content))
+            else:
+                msg = res.json().get("message", "")
+                if version_info.major == 2:
+                    msg = msg.encode("utf-8")
+                self._log.error("unexpected status_code: {}, message is {}".format(res.status_code, msg))
                 return False, {}
-        else:
-            self._log.error("unexpected status_code: {}".format(content))
+        except Exception as _e: # pylint: disable=broad-except
+            self._log.error(repr(res.text))
+            print(traceback.format_exc())
             return False, {}
+
+    def do_get(self, url, params=None, timeout=60):
+        # self._log.debug(url)
+        if params:
+            res = self.session.get(url, headers=self.header_auth, params=params, timeout=timeout)
+        else:
+            res = self.session.get(url, headers=self.header_auth, timeout=timeout)
+
+        return self.process_response(res)
 
     def do_post(self, url, header=None, message=None, timeout=120):
         for key, val in header.items():
             self.header_auth[key] = val
 
-        with self.session as s:
+        with self.session as session:
             if message:
-                r = s.post(url, headers=self.header_auth, data=json.dumps(message), timeout=timeout)
+                res = session.post(url, headers=self.header_auth, data=json.dumps(message), timeout=timeout)
             else:
-                r = s.post(url, headers=self.header_auth, timeout=timeout)
+                res = session.post(url, headers=self.header_auth, timeout=timeout)
 
-            try:
-                content = r.text.encode("utf-8")
-            except:
-                content = r.text
-
-            if r.status_code == 200:
-                try:
-                    ret = r.json()
-                    if ret["status"] != 0:
-                        self._log.error("unexpected status: {}".format(ret["message"]))
-                        return False, {}
-
-                    return True, ret["data"]
-                except:
-                    self._log.error("abnormal: {}".format(content))
-                    return False, {}
-            else:
-                self._log.error(r.status_code)
-                self._log.error("unexpected message: {}".format(r.json()["message"]))
-                return False, {}
+            return self.process_response(res)

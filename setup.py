@@ -13,8 +13,8 @@ def parse_requirements():
     """
     reqs = []
     if os.path.isfile(os.path.join(BASE_DIR, "requirements.txt")):
-        with open(os.path.join(BASE_DIR, "requirements.txt"), 'r') as fd:
-            for line in fd.readlines():
+        with open(os.path.join(BASE_DIR, "requirements.txt"), 'r') as reqs:
+            for line in reqs.readlines():
                 line = line.strip()
                 if line:
                     reqs.append(line)
