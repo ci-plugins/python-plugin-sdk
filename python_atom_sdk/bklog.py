@@ -92,4 +92,3 @@ if __name__ == '__main__':
     obj.error("error is error")
     obj.command("this is a command")
     obj.group_end()
-
