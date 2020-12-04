@@ -120,3 +120,12 @@ class OpenApi():
                 res = session.post(url, headers=self.header_auth, timeout=timeout)
 
             return self.process_response(res)
+
+    def get_credential(self, credential_id):
+        """
+        @summary：根据凭据ID，获取凭据内容
+        """
+
+        path = "/ticket/api/build/credentials/{}/detail".format(credential_id)
+        url = self.generate_url(path)
+        return self.do_get(url)
