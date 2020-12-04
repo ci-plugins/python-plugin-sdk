@@ -146,5 +146,11 @@ def set_output(output):
     setOutput.set_output(output)
 
 
+def get_credential(credential_id):
+    from .openapi import OpenApi
+    client = OpenApi()
+    return client.get_credential(credential_id)
+
+
 if __name__ == "__main__":
     pass

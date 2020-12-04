@@ -23,7 +23,7 @@ def parse_requirements():
 
 if __name__ == "__main__":
     setup(
-        version="1.2.8",
+        version="1.0.0",
         name="python_atom_sdk",
         description="",
 
@@ -32,6 +32,6 @@ if __name__ == "__main__":
         package_data={'': ['*.txt', '*.TXT']},
         install_requires=parse_requirements(),
 
-        author="landun",
+        author="bk-ci",
         license="Copyright(c)2010-2019 landun All Rights Reserved."
     )
