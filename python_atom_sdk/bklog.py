@@ -14,7 +14,7 @@ def getLogger():
     """
     兼容老版本的方法
     """
-    return logger().logger
+    return BKLogger().logger
 
 
 class MyLoggerAdapter(logging.LoggerAdapter):
@@ -37,7 +37,7 @@ class ContextFilter(logging.Filter):
         return True
 
 
-class logger():
+class BKLogger():
 
     def __init__(self):
         init_logger = logging.getLogger(LOG_NAME)
@@ -84,7 +84,7 @@ class logger():
 
 if __name__ == '__main__':
 
-    obj = logger()
+    obj = BKLogger()
     obj.group_start("group1 start")
     obj.info("info is info")
     obj.debug("debug is debug")

@@ -7,11 +7,11 @@ from sys import version_info
 import json
 
 from . import setting
-from .bklog import logger
+from .bklog import BKLogger
 
 
 class OpenApi():
-    _log = logger()
+    _log = BKLogger()
 
     def __init__(self):
         sdk_json = self.get_sdk_json()
