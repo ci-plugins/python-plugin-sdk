@@ -41,3 +41,10 @@ BK_OUTPUT_REPORT_TYPR = {
     "INTERNAL": "INTERNAL",
     "THIRDPARTY": "THIRDPARTY"
 }
+
+#  插件输出错误类型
+BK_OUTPUT_ERROR_TYPE = {
+    "USER": 1,
+    "THIRD_PARTY": 2,
+    "PLUGIN": 3
+}

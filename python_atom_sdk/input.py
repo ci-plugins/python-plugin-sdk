@@ -6,7 +6,7 @@ import codecs
 import sys
 
 from . import setting
-from .bklog import logger
+from .bklog import BKLogger
 
 
 class ParseParams():
@@ -14,7 +14,7 @@ class ParseParams():
     @summary: 获取 插件入参
     """
 
-    _log = logger()
+    _log = BKLogger()
 
     def __init__(self):
         self.data_path = os.getenv(setting.BK_DATA_DIR, '.')

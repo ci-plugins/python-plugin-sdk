@@ -4,7 +4,7 @@ import os
 import json
 
 from . import setting
-from .bklog import logger
+from .bklog import BKLogger
 
 
 class SetOutput():
@@ -12,7 +12,7 @@ class SetOutput():
     @summary: 设置 插件输出
     """
 
-    _log = logger()
+    _log = BKLogger()
 
     def __init__(self):
         self.data_path = os.getenv(setting.BK_DATA_DIR, '.')
