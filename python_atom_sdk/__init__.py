@@ -153,5 +153,20 @@ def get_credential(credential_id):
     return client.get_credential(credential_id)
 
 
+def get_repo_info(identity, identity_type):
+    """
+    @summary: 获取代码库信息
+    """
+    from .openapi import OpenApi
+    client = OpenApi()
+    return client.get_repo_info(identity, identity_type)
+
+
+def get_context_by_name(context_name):
+    from .openapi import OpenApi
+    client = OpenApi()
+    return client.get_context_by_name(context_name)
+
+
 if __name__ == "__main__":
     pass
