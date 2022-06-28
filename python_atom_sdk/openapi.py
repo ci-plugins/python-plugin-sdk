@@ -15,7 +15,6 @@ class OpenApi():
 
     def __init__(self):
         sdk_json = self.get_sdk_json()
-
         self.gateway = sdk_json.get("gateway", None)
         self.header_auth = {
             setting.AUTH_HEADER_DEVOPS_BUILD_TYPE: sdk_json.get("buildType", None),
@@ -56,8 +55,8 @@ class OpenApi():
                 exit(-1)
 
             return sdk_json
-        except Exception as _e: # pylint: disable=broad-except
-            self._log.error("[openapi]parse sdk json error, sdk.json is {}" .format(content))
+        except Exception as _e:  # pylint: disable=broad-except
+            self._log.error("[openapi]parse sdk json error, sdk.json is {}".format(content))
             print(traceback.format_exc())
             exit(-1)
 
@@ -95,7 +94,7 @@ class OpenApi():
                     msg = msg.encode("utf-8")
                 self._log.error("unexpected status_code: {}, message is {}".format(res.status_code, msg))
                 return False, {}
-        except Exception as _e: # pylint: disable=broad-except
+        except Exception as _e:  # pylint: disable=broad-except
             self._log.error(repr(res.text))
             print(traceback.format_exc())
             return False, {}
@@ -127,5 +126,24 @@ class OpenApi():
         """
 
         path = "/ticket/api/build/credentials/{}/detail".format(credential_id)
+        url = self.generate_url(path)
+        return self.do_get(url)
+
+    def get_repo_info(self, identity, identity_type):
+        """
+        @summary：根据代码库别名，获取代码库详细地址
+        """
+        path = "/repository/api/build/repositories/"
+        params = {
+            "repositoryId": identity,
+            "repositoryType": identity_type
+        }
+        url = self.generate_url(path)
+
+        return self.do_get(url, params=params)
+
+    def get_context_by_name(self, context_name):
+        path = "/process/api/build/variable/get_build_context?contextName={}&check=true" \
+            .format(context_name)
         url = self.generate_url(path)
         return self.do_get(url)
