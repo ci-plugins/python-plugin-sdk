@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
 
 from .bklog import BKLogger, getLogger
+from .const import Status, OutputTemplateType, OutputFieldType, OutputReportType, OutputErrorType
 from .input import ParseParams
 from .output import SetOutput
-from .const import Status, OutputTemplateType, OutputFieldType, OutputReportType, OutputErrorType
 
 log = BKLogger()
 parseParamsObj = ParseParams()
@@ -166,6 +167,56 @@ def get_context_by_name(context_name):
     from .openapi import OpenApi
     client = OpenApi()
     return client.get_context_by_name(context_name)
+
+
+def get_language():
+    language = os.getenv("BK_CI_LOCALE_LANGUAGE", "zh_CN")
+    return language
+
+
+def prepare_i18n_environment(package_name):
+    import os
+    import shutil
+    if not os.path.exists('i18n'):
+        print("The 'i18n' directory does not exist.")
+        return
+    try:
+        shutil.copytree('i18n', f'{package_name}/i18n', dirs_exist_ok=True)
+    except FileExistsError:
+        for root, dirs, files in os.walk('i18n'):
+            for file in files:
+                src_file = os.path.join(root, file)
+                dst_file = os.path.join(f'{package_name}/i18n', file)
+                shutil.copy2(src_file, dst_file)
+    else:
+        for root, dirs, files in os.walk('i18n'):
+            for file in files:
+                src_file = os.path.join(root, file)
+                dst_file = os.path.join(f'{package_name}/i18n', file)
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                shutil.copy2(src_file, dst_file)
+
+
+def get_message_by_locale(messageCode, error_code=None, default_msg=""):
+    """
+    @summary：根据语言环境获取对应的描述信息
+    :param messageCode: task.json文件中key(消息标识)或替换描述信息占位符的参数数组
+    :param error_code: 插件错误码
+    :param default_msg: 未获取到国际化信息时返回的默认信息
+    :return: 描述信息
+    """
+    from .openapi import OpenApi
+    client = OpenApi()
+    language = get_language()
+    project_package_name = client.get_caller_project_package_name()
+    return client.get_message_by_locale(
+        project_package_name=project_package_name,
+        message_code=messageCode,
+        language=language,
+        error_code=error_code,
+        default_msg=default_msg
+    )
 
 
 if __name__ == "__main__":

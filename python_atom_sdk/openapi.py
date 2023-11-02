@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import inspect
+import json
 import os
 import traceback
-import requests
-import requests_toolbelt as rt
 from sys import version_info
-import json
+
+import requests
+from pkg_resources import resource_filename, resource_listdir, resource_isdir
 
 from . import setting
 from .bklog import BKLogger
@@ -147,3 +149,65 @@ class OpenApi():
             .format(context_name)
         url = self.generate_url(path)
         return self.do_get(url)
+
+
+    def get_caller_project_package_name(self):
+        # 获取调用栈帧
+        stack_frames = inspect.stack()
+
+        # 查找调用 SDK 的项目包名
+        for frame in stack_frames:
+            module_name = frame[0].f_globals['__name__']
+            # 如果模块名不是 SDK 包名，认为找到了调用项目的包名
+            if not module_name.startswith('python_atom_sdk'):
+                project_package_name = module_name.split('.')[0]
+                return project_package_name
+
+        return None
+
+    def get_message_by_locale(self, project_package_name, message_code, language, error_code, default_msg):
+        """
+        @summary：根据语言环境获取对应的描述信息
+        :param message_code：消息标识
+        :param language：语言信息
+        :param error_code：错误码
+        :param default_msg：默认信息
+        :return: 描述信息
+        """
+        try:
+            file_name = "message_{}.properties".format(language)
+            file_dir = resource_filename(project_package_name, 'i18n/' + file_name)
+            if not os.path.exists(file_dir):
+                self._log.warning("Fail to get i18nMessage, the file {} was not found".format(file_name))
+                return default_msg
+
+            properties = {}
+            with open(file_dir, 'r', encoding='utf-8') as pro_file:
+                for line in pro_file.readlines():
+                    if line.find('=') > 0:
+                        strs = line.replace('\n', '').split('=')
+                        properties[strs[0].strip()] = strs[1]
+
+            if error_code:
+                if isinstance(message_code, list) and message_code:
+                    return properties[str(error_code)].format(*message_code)
+                return properties[str(error_code)].format(message_code)
+            else:
+                return properties[str(message_code)]
+        except IndexError:
+            self._log.warning("Fail to get i18nMessage, [message_code] formatting failed."
+                              " The number of list parameters does not match that of formatting parameters")
+            return default_msg
+        except UnicodeDecodeError as o:
+            self._log.warning("Fail to get i18nMessage, UnicodeDecodeError: {}".format(o))
+            return default_msg
+        except UnicodeError as s:
+            self._log.warning("Fail to get i18nMessage, UnicodeError: {}".format(s))
+            return default_msg
+        except KeyError:
+            self._log.warning("Fail to get i18nMessage of messageCode[{0}], KeyError: '{0}'".format(message_code))
+            return default_msg
+        except Exception as e:
+            self._log.warning("Fail to get i18nMessage, {}".format(e))
+            return default_msg
+
