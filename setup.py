@@ -11,22 +11,22 @@ def parse_requirements():
     """
     @summary: 获取依赖
     """
-    reqs = []
+    requirements = []
     if os.path.isfile(os.path.join(BASE_DIR, "requirements.txt")):
-        with open(os.path.join(BASE_DIR, "requirements.txt"), 'r') as reqs:
-            for line in reqs.readlines():
+        with open(os.path.join(BASE_DIR, "requirements.txt"), 'r') as reqs_file:
+            for line in reqs_file.readlines():
                 line = line.strip()
                 if line:
-                    reqs.append(line)
-    return reqs
+                    requirements.append(line)
+    return requirements
+
 
 
 if __name__ == "__main__":
     setup(
-        version="1.0.0",
+        version="1.0.1",
         name="python_atom_sdk",
         description="",
-
         cmdclass={},
         packages=find_packages(),
         package_data={'': ['*.txt', '*.TXT']},
